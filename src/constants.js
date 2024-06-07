@@ -1,0 +1,1 @@
+export const BACKEND_IP = "https://soccer-tracking-backend.uicodelab.com";

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { BACKEND_IP } from './constants';
 import UploadComponent from './components/UploadComponent';
 import BasicSpinner from './components/BasicSpinner';
 import axios from 'axios';
@@ -9,6 +10,7 @@ import playerDetectionIcon from './icons/identificacion-de-rostro.png';
 import fieldDetectionIcon from './icons/cancha-de-futbol.png';
 import teamAfiliationIcon from './icons/equipo.png';
 import videoGenerationIcon from './icons/video.png';
+import videoEmptyIcon from './icons/video_empty.png';
 
 const App = () => {
   const [uploadStatus, setUploadStatus] = useState('idle');
@@ -18,6 +20,7 @@ const App = () => {
   const [videoUrl, setVideoUrl] = useState('');
   const [videoId, setVideoId] = useState('');
   const [videoGeneratedUrl, setVideoGeneratedUrl] = useState('');
+  const [disabledButton, setDisabledButton] = useState(false);
 
   const getStyles = (status) => {
     return {
@@ -27,13 +30,12 @@ const App = () => {
         borderRadius: '5px',
         // Default style for idle status
         opacity: status === 'idle' ? 0.5 : 1,
-        // Highlight style for running status
-        backgroundColor: status === 'in_progress' ? '#ffd700' : 'inherit',
-        // Green background for success status
-        backgroundColor: status === 'success' ? '#00ff00' : 'inherit',
+        // Highlight style for running status,  Green background for success status  Red background for error status
+        backgroundColor: status === 'in_progress' ? '#f0f0f0' : status === 'success' ? '#d4edda' : status === 'error' ? '#f8d7da' : '#fff'
       }
     };
   }
+
 
   useEffect(() => {
     const processVideo = async () => {
@@ -41,9 +43,8 @@ const App = () => {
         return;
       }
       setProcessingStatus('in_progress');
-      console.log('Processing video:', videoUrl, videoId);
       try {
-        const response = await axios.post('http://localhost:8080/process', {}, {
+        const response = await axios.post(`${BACKEND_IP}/process`, {}, {
           params: {
             videoUrl: videoUrl,
             videoId: videoId
@@ -51,12 +52,14 @@ const App = () => {
         });
         if (response.status !== 200) {
           setProcessingStatus('error');
+          setDisabledButton(false);
         }
-        console.log('Video processed successfully:', response.data);
+
       } catch (error) {
         console.error('Error processing video:', error);
         alert('Error processing video. Please try again.');
         setProcessingStatus('error');
+        setDisabledButton(false);
       } finally {
         setProcessingStatus('success');
       }
@@ -71,9 +74,8 @@ const App = () => {
         return;
       }
       setVideoGeneratedStatus('in_progress');
-      console.log('Generating video:', videoUrl, videoId);
       try {
-        const response = await axios.post('http://localhost:8080/generate_video', {}, {
+        const response = await axios.post(`${BACKEND_IP}/generate_video`, {}, {
           params: {
             videoUrl: videoUrl,
             videoId: videoId
@@ -82,18 +84,19 @@ const App = () => {
 
         if (response.status !== 200) {
           setVideoGeneratedStatus('error');
+          setDisabledButton(false);
         }
 
         const videoUrl_temp = response.data; // Assuming the URL is directly returned in the response data
-        console.log('Generated video URL:', videoUrl_temp);
         setVideoGeneratedUrl(response.data);
-        console.log('Video generated successfully:', response.data);
       } catch (error) {
         console.error('Error generating video:', error);
         alert('Error generating video. Please try again.');
         setVideoGeneratedStatus('error');
+        setDisabledButton(false);
       } finally {
         setVideoGeneratedStatus('success');
+        setDisabledButton(false);
       }
     };
 
@@ -105,12 +108,23 @@ const App = () => {
   return (
     <>
       <div className='containerTitle'>
-        <h1>Soccer Tracking Data App</h1>
-        <p> linkedid information plus project explaination </p>
+        <h1 className='tittle'> Soccer Tracking Data App</h1>
       </div>
+      <div className='containerDescription'>
+        <p>Welcome to our <em><b>Soccer Player Tracking Web App!</b></em> Currently under development, this application is designed to extract raw tracking data from short soccer broadcast videos.
+          <h4 className='titleHowToUse'>How to use</h4>
+          At this stage, the app offers annotated videos showcasing player tracking. We are actively working on Steps 3 and 4 to enrich the user experience.</p>
+        <p> To experience our app, simply upload a short soccer broadcast video, ideally no longer than 35 seconds. For your convenience, sample videos are available in the Kaggle competition
+          <a href="https://www.kaggle.com/competitions/dfl-bundesliga-data-shootout/data?select=clips" target="_blank" rel="noopener noreferrer"> DFL - Bundesliga Data Shootout</a>.
+          Please note that the Player Detection process (Step 2) may take up to 3 minutes, plus the duration of your video.
+          The initial 3-minute delay is attributed to booting our YOLO model, an aspect we are actively working to optimize.</p>
+        <h4>Developer</h4>
+        <p> This app is developed by <a href="https://www.linkedin.com/in/jc-campos/" target="_blank" rel="author">Juan Camilo Campos</a> </p>
+      </div >
       <div className='containerUpload'>
         <h5>Please upload a video</h5>
-        <UploadComponent setUploadStatus={setUploadStatus} setVideoUrl={setVideoUrl} setVideoId={setVideoId} />
+        <UploadComponent setUploadStatus={setUploadStatus} setProcessingStatus={setProcessingStatus} setVideoGeneratedStatus={setVideoGeneratedStatus}
+          setVideoUrl={setVideoUrl} setVideoId={setVideoId} setVideoGeneratedUrl={setVideoGeneratedUrl} disabledButton={disabledButton} setDisabledButton={setDisabledButton} />
       </div>
       <div className='containerFlow'>
         <div style={getStyles(uploadStatus).container}>
@@ -147,21 +161,24 @@ const App = () => {
       <div className='containerVideos'>
         <div>
           <h2>Original Video</h2>
-          {videoUrl && (
+          {videoUrl ? (
             <video width={640} height={480} controls>
               <source src={videoUrl} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
+          ) : (
+            // Add a placeholder image
+            <img className='imgEmptyVideo' width={240} src={videoEmptyIcon} alt="Placeholder" />
           )}
         </div>
         <div>
           <h2>Annotated Video</h2>
-          {videoGeneratedUrl && (
+          {videoGeneratedUrl ? (
             <video width={640} height={480} controls>
               <source src={videoGeneratedUrl} type="video/mp4" />
               Your browser does not support the video tag.
             </video>
-          )}
+          ) : <img className='imgEmptyVideo' width={240} src={videoEmptyIcon} alt="Placeholder" />}
         </div>
       </div >
     </>

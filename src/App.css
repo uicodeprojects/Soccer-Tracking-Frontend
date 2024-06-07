@@ -47,6 +47,20 @@
   margin-bottom: 20px;
 }
 
+.containerDescription {
+  display: grid;
+  text-align: left;
+  justify-content: left;
+  align-items: center;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  margin-left: 20px;
+}
+
+.titleHowToUse {
+  margin-top: 20px;
+}
+
 .containerUpload {
   display: grid;
   justify-content: center;
@@ -58,6 +72,8 @@
 
 .containerFlow {
   margin-top: 50px;
+  margin-left: 20px;
+  margin-right: 20px;
   display: grid;
   text-align: center;
   justify-content: center;
@@ -95,6 +111,12 @@
 
 /* Style Idle  show everything gray/opaque*/
 .idle {
+  filter: grayscale(100%);
+  opacity: 0.5;
+}
+
+.imgEmptyVideo {
+  margin-top: 40px;
   filter: grayscale(100%);
   opacity: 0.5;
 }

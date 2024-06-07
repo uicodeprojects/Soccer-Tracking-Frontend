@@ -15,6 +15,13 @@ const BasicSpinner = ({ status }) => {
                 <p>Done!</p>
             </div>
         );
+    } else if (status === 'error') {
+        return (
+            <div>
+                <p>Error</p>
+            </div>
+        );
+
     } else {
         return (
             <div>

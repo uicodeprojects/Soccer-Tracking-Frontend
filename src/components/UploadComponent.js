@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { BACKEND_IP } from '../constants';
 import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 
-function UploadComponent({ setUploadStatus, setVideoUrl, setVideoId }) {
+function UploadComponent({ setUploadStatus, setProcessingStatus, setVideoGeneratedStatus, setVideoUrl, setVideoId, setVideoGeneratedUrl, disabledButton,
+    setDisabledButton }) {
     const [selectedFile, setSelectedFile] = useState(null);
 
 
@@ -11,6 +13,14 @@ function UploadComponent({ setUploadStatus, setVideoUrl, setVideoId }) {
     };
 
     const handleUpload = async () => {
+        setUploadStatus('idle')
+        setProcessingStatus('idle')
+        setVideoGeneratedStatus('idle')
+
+        setVideoUrl('');
+        setVideoId('');
+        setVideoGeneratedUrl('');
+
         if (!selectedFile) {
             alert('Please select a file to upload.');
             return;
@@ -30,9 +40,10 @@ function UploadComponent({ setUploadStatus, setVideoUrl, setVideoId }) {
         formData.append('file', selectedFile);
 
         setUploadStatus("in_progress");
+        setDisabledButton(true);
 
         try {
-            const response = await axios.post('http://localhost:8080/upload', formData, {
+            const response = await axios.post(`${BACKEND_IP}/upload`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
 
@@ -44,20 +55,20 @@ function UploadComponent({ setUploadStatus, setVideoUrl, setVideoId }) {
             const videoUrl_temp = response.data; // Assuming the URL is directly returned in the response data
             console.log('Uploaded video URL:', videoUrl_temp);
             setVideoUrl(response.data);
+            setUploadStatus("success");
         } catch (error) {
             console.error('Error uploading file:', error);
             setUploadStatus("error");
+            setDisabledButton(false);
             alert('Error uploading file. Please try again.');
-        } finally {
-            setUploadStatus("success");
         }
     };
 
     return (
         <div>
-            <input type="file" onChange={handleFileChange} />
+            <input type="file" onChange={handleFileChange} disabled={disabledButton} />
             {(
-                <button onClick={handleUpload}>Upload</button>
+                <button onClick={handleUpload} disabled={disabledButton} >Upload</button>
             )}
         </div>
     );
