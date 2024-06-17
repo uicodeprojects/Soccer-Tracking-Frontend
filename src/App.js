@@ -135,7 +135,7 @@ const App = () => {
         </div>
         <div className="containerProcessing">
           <div style={getStyles(processingStatus).container}>
-            <h3>2. Player Detection (yolo)</h3>
+            <h3>2. Player Detection (YOLOv8) & Tracker (BotSort)</h3>
             <img src={playerDetectionIcon} alt="playerDetectionIcon" style={{ width: '50px', height: '50px' }} />
             <BasicSpinner status={processingStatus} />
             <hr />
@@ -152,7 +152,7 @@ const App = () => {
           <hr />
         </div>
         <div style={getStyles(videoGeneratedStatus).container}>
-          <h3>5.Generate Video/Tracking Data (ByteTraker)</h3>
+          <h3>5.Generate Video</h3>
           <img src={videoGenerationIcon} alt="videoGenerationIcon" style={{ width: '50px', height: '50px' }} />
           <BasicSpinner status={videoGeneratedStatus} />
           <hr />
